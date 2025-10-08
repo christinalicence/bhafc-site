@@ -75,3 +75,58 @@ class MatchPerformance(models.Model):
     
     def __str__(self):
         return f"{self.player.name} vs {self.opponent}"
+
+
+class UserReview(models.Model):
+    """Fan reviews"""
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    overall_rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    technical_skill = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    work_rate = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+
+    
+    title = models.CharField(max_length=200)
+    review_text = models.TextField()
+    helpful_count = models.IntegerField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['player', 'user']
+    
+    def __str__(self):
+        return f"{self.user.username}'s review of {self.player.name}"
+
+
+class PlayerAISummary(models.Model):
+    """AI-generated insights"""
+    player = models.OneToOneField(Player, on_delete=models.CASCADE)
+    
+    recent_form_summary = models.TextField()
+    strengths = models.TextField(blank=True)
+    areas_for_improvement = models.TextField(blank=True)
+    
+    next_opponent = models.CharField(max_length=100, blank=True)
+    predicted_rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    prediction_summary = models.TextField(blank=True)
+    prediction_confidence = models.IntegerField(default=50)
+    
+    last_generated = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"AI Summary for {self.player.name}"
+
+
+class UserProfile(models.Model):
+    """User profile"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    marketing_consent = models.BooleanField(default=False)
+    email_notifications = models.BooleanField(default=True)
+    favorite_player = models.ForeignKey(Player, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    def __str__(self):
+        return f"Profile for {self.user.username}"
