@@ -51,5 +51,27 @@ class Player(models.Model):
             avg = sum(m.rating for m in recent) / len(recent)
             return round(avg, 2)
         return None
+
+
+class MatchPerformance(models.Model):
+    """Individual match performance"""
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    match_date = models.DateField()
+    opponent = models.CharField(max_length=100)
+    home_away = models.CharField(max_length=4, choices=[('HOME', 'Home'), ('AWAY', 'Away')])
     
+    rating = models.DecimalField(max_digits=3, decimal_places=2)
+    minutes_played = models.IntegerField()
+    goals = models.IntegerField(default=0)
+    assists = models.IntegerField(default=0)
     
+    result = models.CharField(max_length=4, choices=[
+        ('WIN', 'Win'), ('DRAW', 'Draw'), ('LOSS', 'Loss')
+    ], blank=True)
+    
+    class Meta:
+        ordering = ['-match_date']
+        unique_together = ['player', 'match_date', 'opponent']
+    
+    def __str__(self):
+        return f"{self.player.name} vs {self.opponent}"
